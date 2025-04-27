@@ -1,0 +1,33 @@
+Name     NAME;
+PartNo   00;
+Date     24.03.2025;
+Revision 01;
+Designer NAME;
+Company  HTWK;
+Assembly None;
+Location  ;
+Device   g16v8;
+
+/* Define Inputs */
+PIN 1  = CLK;
+PIN 2  = X;
+
+/* Define Outputs */
+PIN 19 = Q0; 
+PIN 18 = Q1;
+PIN 17 = Q2;
+PIN 16 = A;
+PIN 15 = B;
+PIN 14 = C;
+PIN 13 = D;
+
+/* Define Registered Outputs */
+Q2.d = (!X & Q1 & Q0) # (!Q2 & Q1 & Q0) # (Q2 & !Q1 & !Q0) # (X & !Q2 & !Q0);
+Q1.d = (!Q2 & !Q1 & Q0) # (X & !Q2 & !Q0) # (!X & Q1 & !Q0) # (X & Q2 & Q1 & Q0);
+Q0.d = (!X & !Q2 & !Q0) # (Q2 & !Q1 & !Q0) # (Q2 & Q1 & Q0) # (X & Q1 & !Q0);
+
+A = !Q2 # (!Q1 & !Q0);
+B = (!Q2 & !Q1 & !Q0);
+C = (!Q2 & !Q1) # (!Q2 & !Q0);
+D = Q0 # (Q2 & Q1);
+

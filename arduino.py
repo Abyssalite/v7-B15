@@ -105,5 +105,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     arduino = serial.Serial('/dev/tty'+args.port, 9600)
+    print(arduino)
     menu(args.function, arduino, args.size)
    

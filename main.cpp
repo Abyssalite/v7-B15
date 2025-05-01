@@ -19,6 +19,7 @@ void send(B15F& drv) {
 	text += '\n';
 
 	for (char bin: text) {
+
 		for (int i = 0; i < 3; i++) {    
 		  	int part = (bin >> i*3) & 0b00000111;  
 			drv.setRegister(&PORTA, part |= 0b11000000);

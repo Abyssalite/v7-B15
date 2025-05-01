@@ -5,15 +5,15 @@ const byte syncPin = 10;
 
 void setup() {
   // put your setup code here, to run once:
+  pinMode(WRPin, INPUT);
+  pinMode(syncPin, INPUT);
+  
   for(int i = 0; i < 3; i++) {
     pinMode(sendPin[i], OUTPUT);
   }  
   for(int i = 0; i < 3; i++) {
     pinMode(recePin[i], INPUT);
   }  
-  pinMode(WRPin, INPUT);
-  pinMode(syncPin, INPUT);
-
   Serial.begin(9600);
 }
 
@@ -64,6 +64,7 @@ void sendBin(byte bin) {
   digitalWrite(WRPin, LOW);
   pinMode(syncPin, INPUT);
   pinMode(WRPin, INPUT);
+  delay(12);
 }
 
 void loop() {
@@ -76,6 +77,5 @@ void loop() {
   if (Serial.available() > 0) {
     data = Serial.read();
     sendBin(data);
-    delay(12);
   }
 }

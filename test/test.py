@@ -4,28 +4,28 @@ import os
 import argparse
 import sys
  
-def menu(function, arduino, block_size = "1"):
+def menu(function, block_size = None):
     try:
         if function == '1':
-            send(arduino)
+            print("send(arduino)")
         elif function == '2':
-            receive(arduino)
+            print("receive(arduino)")
         elif function == '3':
-            binTransfer(int(block_size), arduino)
+            if block_size is None:
+                blocks = splitBin(1)
+                for block in blocks:
+                    print(parity(block))
+            else:
+                blocks = splitBin(int(block_size))
+                for block in blocks:
+                    print(parity(block))
+
         elif function == '4':
-            binReceive(arduino)
+            print("binReceive(arduino)")
         else:
             print("Function " + function + " not available\n")
     except ValueError:
             print("Size must be number\n")
-
-def send(arduino): 
-    s = sys.stdin.readline()
-    arduino.write((s + '\n').encode('utf-8'))
-        
-def receive(arduino): 
-    s = arduino.readline().decode('utf-8')
-    sys.stdout.write(s)
     
             
 def binTransfer(size, arduino): 
@@ -72,10 +72,11 @@ def binReceive(arduino):
    
 def confirmation():
     while True:
-        s = arduino.readline().decode('utf-8')
-        if s == "NO_ERROR\n":
-            return True
-        else: return False
+        print("test")
+        #s = arduino.readline().decode('utf-8')
+        #if s == "NO_ERROR\n":
+        #    return True
+        #else: return False
    
 def parity(block):
     result = 0
@@ -99,12 +100,9 @@ def splitBin(size):
      
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("port", type=str, help="Port")
     parser.add_argument("function", help="Function")
     parser.add_argument("--size", type=str, required= False, help="Block size in kb")
 
     args = parser.parse_args()
-    arduino = serial.Serial('/dev/tty'+args.port, 9600)
-    print(arduino)
-    menu(args.function, arduino, args.size)
+    menu(args.function, args.size)
    

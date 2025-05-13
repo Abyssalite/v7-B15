@@ -9,14 +9,8 @@
 
 using namespace std::chrono_literals;
 
-void send(B15F& drv) {
+void send(B15F& drv, std::string text) {
 	drv.setRegister(&DDRA, 0b11000111);
-	std::cin.clear();
-	std::string text;
-	
-	std::cout << "Input text: ";
-	std::getline(std::cin, text);
-	text += '\n';
 
 	for (char bin: text) {
 
@@ -33,9 +27,9 @@ void send(B15F& drv) {
 	drv.setRegister(&DDRA, 0b00000111);
 }
 
-void receive(B15F& drv) {
+std::string receive(B15F& drv) {
 	int bin;
-	std::cout << "Received text: ";
+	std::string text = "";
 	do {
 	        int n = 0;
 	        bin = 0b00000000;
@@ -59,8 +53,10 @@ void receive(B15F& drv) {
 			        } 
 	         	}       
 	        }
-	        std::cout << (char)bin;
+	        text.append(std::to_string((char)bin));
 	} while ((char)bin != '\n');
+
+	return text;
 }
 
 std::vector<std::vector<char>> splitBin(int size) {
@@ -71,14 +67,6 @@ std::vector<std::vector<char>> splitBin(int size) {
 	while (std::cin.read(buffer.data(), bufferSize) || std::cin.gcount() > 0) {
 		blocks.emplace_back(buffer.begin(), buffer.begin() + std::cin.gcount());
 	}
-	/*std::cout << "Block S " << blocks.size() <<std::endl;
-	for(size_t i = 0; i < blocks.size(); i++){
-		std::cout << "Block " << i << ' ';
-		for(char byte: blocks[i])
-			std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << ' ';
-		std::cout << std::endl;
-	}*/
-
     return blocks;
 }
 
@@ -93,10 +81,15 @@ void menu(B15F& drv, char* argv[]) {
 	        std::string choose = argv[1];
 
 		if(choose == "1") {
-			send(drv);
+			std::cin.clear();
+			std::string text;
+			
+			std::getline(std::cin, text);
+			text += '\n';
+			send(drv, text);
 		}
 		else if(choose == "2") {
-			receive(drv);
+			std::cout << receive(drv);
 		}
 		else if(choose == "3") {
 			try {

@@ -34,6 +34,17 @@ std::optional<std::vector<unsigned char>> from_hex(const std::string& hex) {
 
     return bytes;
 }
+   
+bool confirmation(){
+    while (true){
+		//s = arduino.readline().decode('utf-8')
+        std::string s = "NO_ERROR\n";
+        if (s == "NO_ERROR\n")
+            return true;
+        else return false;
+	}
+
+}
 
 int parity(std::vector<unsigned char> block) { 
 	int result = 0;
@@ -66,7 +77,7 @@ void binTransfer(int size) {
 
 		std::string data = s + '|' + std::to_string(block_parity) + '|' + end;
 		std::cout << data + '\n';
-		//if(confirmation()) i += 1
+		if(confirmation()) i += 1;
 	}
 
 }

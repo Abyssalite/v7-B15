@@ -6,8 +6,35 @@
 #include <thread>
 #include <vector>
 #include <iomanip>
+#include <sstream>
+#include <optional>
+#include <fstream>
 
 using namespace std::chrono_literals;
+
+std::string to_hex(const std::vector<unsigned char>& data) {
+    std::ostringstream oss;
+    for (unsigned char byte : data)
+        oss << std::hex << std::setfill('0') << std::setw(2) << (int)byte;
+    return oss.str();
+}
+
+std::optional<std::vector<unsigned char>> from_hex(const std::string& hex) {
+    if (hex.length() % 2 != 0) return std::nullopt;
+
+    std::vector<unsigned char> bytes;
+    try {
+        for (size_t i = 0; i < hex.length(); i += 2) {
+            std::string byteString = hex.substr(i, 2);
+            unsigned char byte = static_cast<unsigned char>(std::stoi(byteString, nullptr, 16));
+            bytes.push_back(byte);
+        }
+    } catch (...) {
+        return std::nullopt;
+    }
+
+    return bytes;
+}
 
 void send(B15F& drv, std::string text) {
 	drv.setRegister(&DDRA, 0b11000111);
@@ -53,15 +80,29 @@ std::string receive(B15F& drv) {
 			        } 
 	         	}       
 	        }
-	        text.append(std::to_string((char)bin));
+	        text += (char)bin;
 	} while ((char)bin != '\n');
 
 	return text;
 }
 
-std::vector<std::vector<char>> splitBin(int size) {
-	const std::size_t bufferSize = 1024 * size;
-	std::vector<std::vector<char>> blocks;
+bool confirmation(B15F& drv){
+	std::string s = receive(drv);
+	if (s == "NE\n")
+		return true;
+	else return false;
+}
+
+int parity(std::vector<unsigned char> block) { 
+	int result = 0;
+	for (unsigned char byte: block)
+		result ^= int(byte);
+	return result;
+}
+
+std::vector<std::vector<unsigned char>> splitBin(int size) {
+	const std::size_t bufferSize = 128 * size;
+	std::vector<std::vector<unsigned char>> blocks;
 
 	std::vector<char> buffer(bufferSize);
 	while (std::cin.read(buffer.data(), bufferSize) || std::cin.gcount() > 0) {
@@ -70,11 +111,26 @@ std::vector<std::vector<char>> splitBin(int size) {
     return blocks;
 }
 
-int parity(std::vector<char> block) { 
-	int result = 0;
-	for (char byte: block)
-		result ^= int(byte);
-	return result;
+void binTransfer(B15F& drv, int size) {
+	auto blocks = splitBin(size);
+	std::size_t i = 0;
+	std::string end = "";
+	while(i < blocks.size()) {
+		end = (i == blocks.size() - 1)?  "END" : std::to_string(i);
+		
+
+		std::string s = to_hex(blocks[i]);
+		std::vector<unsigned char> encoded(s.begin(), s.end());
+		int block_parity = parity(encoded);
+
+		std::string data = s + '|' + std::to_string(block_parity) + '|' + end;
+		std::cout << data;
+		send(drv, data + '\n');
+		if(confirmation(drv)) {
+			i+=1;
+			std::cout << "NE";
+		} else 	std::cout << "ER";
+	}
 }
 
 void menu(B15F& drv, char* argv[]) {
@@ -94,32 +150,28 @@ void menu(B15F& drv, char* argv[]) {
 		else if(choose == "3") {
 			try {
 				if (argv[2]== nullptr){
-					auto blocks = splitBin(1);
-					for (std::vector<char> block: blocks)
-						std::cout << parity(block) << std::endl;
+					binTransfer(drv, 1);
 				}
 				else{
 					std::string x = argv[2];
 					if (x == "--size") {
 						std::string size = argv[3];
-						auto blocks = splitBin(std::stoi(size));
-						for (std::vector<char> block: blocks)
-							std::cout << parity(block) << std::endl;
+						binTransfer(drv, std::stoi(size));
 					}
 					else throw std::runtime_error("Argument not available");
-				}
-
-					
+				}	
 			} catch (const std::invalid_argument& e) {
 				std::cout << "Size must be number\n";
 			} catch (const std::logic_error& e) {
 				std::cout << e.what() << ". Missing size!\n";
 			} catch (const std::runtime_error& e) {
 				std::cout << e.what() << "\n";
-			}
+			}		
 		}
-		else if(choose == "0") {}
+		else if(choose == "4") {
+			//binReceive();
 
+		}
 		else{
 			std::cout << "Function "<< choose << " not available.\n";
 		}

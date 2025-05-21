@@ -1,6 +1,4 @@
-import serial
 import binascii
-import os
 import argparse
 import sys
  
@@ -46,7 +44,7 @@ def binTransfer(size):
         data = s + '|' + block_parity + '|' + end
         print(data)
         print("arduino.write((data + '\n').encode('utf-8'))")
-        #if(confirmation()): i += 1
+        if(confirmation()): i += 1
         
 def binReceive():   
     data = ""
@@ -77,11 +75,11 @@ def binReceive():
    
 def confirmation():
     while True:
-        print("test")
         #s = arduino.readline().decode('utf-8')
-        #if s == "NO_ERROR\n":
-        #    return True
-        #else: return False
+        s = "NO_ERROR\n"
+        if s == "NO_ERROR\n":
+            return True
+        else: return False
    
 def parity(block):
     result = 0

@@ -1,8 +1,8 @@
 import serial
 import binascii
-import os
 import argparse
 import sys
+import time
  
 def menu(function, arduino, block_size = "1"):
     try:
@@ -41,7 +41,7 @@ def binTransfer(size, arduino):
         data = s + '|' + block_parity + '|' + end
         print(i)
         arduino.write((data + '\n').encode('utf-8'))
-        if(confirmation()):
+        if(confirmation(arduino)):
             i += 1
         
 def binReceive(arduino):   
@@ -51,29 +51,30 @@ def binReceive(arduino):
             s = arduino.readline().decode('utf-8').strip()
             block,block_parity,end = s.split('|')
             newParity = str(parity(block.encode('utf-8')))
-            #print (newParity + "|" + block_parity) 
+            print (newParity + "|" + block_parity) 
         
             if(block_parity == newParity):
-                arduino.write(("NO_ERROR\n").encode('utf-8'))
+                time.sleep(0.0001) #100us
+                arduino.write(("NE\n").encode('utf-8'))
                 binascii.unhexlify(block)
                 data += block
-                #print(f"Block: {end}")
+                print(f"Block: {end}")
             else: arduino.write(('\n').encode('utf-8'))
             
         except UnicodeDecodeError as e:
-            arduino.write(('\n').encode('utf-8'))
+            arduino.write(('ER\n').encode('utf-8'))
         except binascii.Error as e:
-            arduino.write(('\n').encode('utf-8'))
+            arduino.write(('ER\n').encode('utf-8'))
         except ValueError as e:
-            arduino.write(('\n').encode('utf-8'))
+            arduino.write(('ER\n').encode('utf-8'))
             
     sys.stdout.buffer.write(binascii.unhexlify(data))
     sys.stdout.flush()
    
-def confirmation():
+def confirmation(arduino):
     while True:
         s = arduino.readline().decode('utf-8')
-        if s == "NO_ERROR\n":
+        if s == "NE\n":
             return True
         else: return False
    
@@ -85,8 +86,8 @@ def parity(block):
 
 def splitBin(size):
     if size is None:
-        block_size = 1024  # Convert KB to bytes
-    else: block_size = int(size) * 1024
+        block_size = 128  # Convert KB to bytes
+    else: block_size = int(size) * 128
         
     blocks = []
 

@@ -9,6 +9,7 @@
 #include <sstream>
 #include <optional>
 #include <fstream>
+#include <cctype> 
 
 using namespace std::chrono_literals;
 
@@ -34,6 +35,18 @@ std::optional<std::vector<unsigned char>> from_hex(const std::string& hex) {
     }
 
     return bytes;
+}
+
+std::string strip(const std::string& s) {
+    size_t start = 0;
+    while (start < s.length() && (std::isspace(static_cast<unsigned char>(s[start])) || s[start] == '\0')) {
+        ++start;
+    }
+    size_t end = s.length();
+    while (end > start && (std::isspace(static_cast<unsigned char>(s[end - 1])) || s[end - 1] == '\0')) {
+        --end;
+    }
+    return s.substr(start, end - start);
 }
 
 void send(B15F& drv, std::string text) {
@@ -82,13 +95,12 @@ std::string receive(B15F& drv) {
 	        }
 	        text += (char)bin;
 	} while ((char)bin != '\n');
-
 	return text;
 }
 
 bool confirmation(B15F& drv){
-	std::string s = receive(drv);
-	if (s == "NE\n")
+	std::string s = strip(receive(drv));
+	if (s == "NE") 
 		return true;
 	else return false;
 }
@@ -103,8 +115,8 @@ int parity(std::vector<unsigned char> block) {
 std::vector<std::vector<unsigned char>> splitBin(int size) {
 	const std::size_t bufferSize = 128 * size;
 	std::vector<std::vector<unsigned char>> blocks;
-
 	std::vector<char> buffer(bufferSize);
+
 	while (std::cin.read(buffer.data(), bufferSize) || std::cin.gcount() > 0) {
 		blocks.emplace_back(buffer.begin(), buffer.begin() + std::cin.gcount());
 	}
@@ -118,18 +130,15 @@ void binTransfer(B15F& drv, int size) {
 	while(i < blocks.size()) {
 		end = (i == blocks.size() - 1)?  "END" : std::to_string(i);
 		
-
 		std::string s = to_hex(blocks[i]);
 		std::vector<unsigned char> encoded(s.begin(), s.end());
 		int block_parity = parity(encoded);
 
 		std::string data = s + '|' + std::to_string(block_parity) + '|' + end;
-		std::cout << data;
+		std::cout << "Block " << end << "| parity: " << block_parity << std::endl;
 		send(drv, data + '\n');
-		if(confirmation(drv)) {
-			i+=1;
-			std::cout << "NE";
-		} else 	std::cout << "ER";
+
+		if(confirmation(drv)) i+=1;
 	}
 }
 

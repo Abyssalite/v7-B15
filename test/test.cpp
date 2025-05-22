@@ -54,7 +54,7 @@ int parity(std::vector<unsigned char> block) {
 }
 
 std::vector<std::vector<unsigned char>> splitBin(int size) {
-	const std::size_t bufferSize = 1024 * size;
+	const std::size_t bufferSize = 128 * size;
 	std::vector<std::vector<unsigned char>> blocks;
 
 	std::vector<char> buffer(bufferSize);

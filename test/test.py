@@ -89,8 +89,8 @@ def parity(block):
 
 def splitBin(size):
     if size is None:
-        block_size = 1024  # Convert KB to bytes
-    else: block_size = int(size) * 1024
+        block_size = 128  # Convert KB to bytes
+    else: block_size = int(size) * 128
         
     blocks = []
 
@@ -108,4 +108,3 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     menu(args.function, args.size)
-   

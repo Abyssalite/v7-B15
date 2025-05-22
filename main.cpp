@@ -133,11 +133,10 @@ void binTransfer(B15F& drv, int size) {
 		std::string s = to_hex(blocks[i]);
 		std::vector<unsigned char> encoded(s.begin(), s.end());
 		int block_parity = parity(encoded);
-
 		std::string data = s + '|' + std::to_string(block_parity) + '|' + end;
 		std::cout << "Block " << end << "| parity: " << block_parity << std::endl;
+		
 		send(drv, data + '\n');
-
 		if(confirmation(drv)) i+=1;
 	}
 }

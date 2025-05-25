@@ -41,9 +41,10 @@ def binTransfer(size):
         
         s = binascii.hexlify(blocks[i]).decode('utf-8')
         block_parity = str(parity(s.encode('utf-8')))
-        data = s + '|' + block_parity + '|' + end
+        data = '|' + block_parity + '|' + end
+        print(s)
         print(data)
-        print("arduino.write((data + '\n').encode('utf-8'))")
+        #arduino.write((data + '\n').encode('utf-8'))
         if(confirmation()): i += 1
         
 def binReceive():   
@@ -58,10 +59,10 @@ def binReceive():
             #print (block + " " + newParity + "|" + block_parity) 
         
             if(block_parity == newParity):
-                print("arduino.write(('NO_ERROR\n').encode('utf-8'))")
+                #arduino.write(('NO_ERROR\n').encode('utf-8'))
                 binascii.unhexlify(block)
                 data += block
-            else: print("arduino.write(('ERR').encode('utf-8'))")
+            #else: arduino.write(('ERR').encode('utf-8'))
             
         except UnicodeDecodeError as e:
             print("arduino.write(('ERR').encode('utf-8'))")
@@ -89,8 +90,8 @@ def parity(block):
 
 def splitBin(size):
     if size is None:
-        block_size = 128  # Convert KB to bytes
-    else: block_size = int(size) * 128
+        block_size = 32  # Convert KB to bytes
+    else: block_size = int(size) * 32
         
     blocks = []
 

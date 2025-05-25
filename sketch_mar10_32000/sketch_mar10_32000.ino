@@ -64,7 +64,7 @@ void sendBin(byte bin) {
   digitalWrite(WRPin, LOW);
   pinMode(syncPin, INPUT);
   pinMode(WRPin, INPUT);
-  delay(12);
+  delay(50);
 }
 
 void loop() {

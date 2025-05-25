@@ -54,7 +54,7 @@ int parity(std::vector<unsigned char> block) {
 }
 
 std::vector<std::vector<unsigned char>> splitBin(int size) {
-	const std::size_t bufferSize = 128 * size;
+	const std::size_t bufferSize = 32 * size;
 	std::vector<std::vector<unsigned char>> blocks;
 
 	std::vector<char> buffer(bufferSize);
@@ -75,7 +75,8 @@ void binTransfer(int size) {
 		std::vector<unsigned char> encoded(s.begin(), s.end());
 		int block_parity = parity(encoded);
 
-		std::string data = s + '|' + std::to_string(block_parity) + '|' + end;
+		std::string data = '|' + std::to_string(block_parity) + '|' + end;
+		std::cout << s;
 		std::cout << data + '\n';
 		if(confirmation()) i += 1;
 	}

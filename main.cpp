@@ -81,7 +81,7 @@ std::string receive(B15F& drv) {
 		        if(n < 7) {
 			        while((drv.getRegister(&PINA) >> 6) & 0b00000001) {          
 		          		lState = (drv.getRegister(&PINA) >> 6) & 0b00000001;
-				        std::this_thread::sleep_for(1us); //~60 real us
+				        std::this_thread::sleep_for(1us); 
 		          		tmp = (drv.getRegister(&PINA) & 0b00111000) >> 3;
 		          		bin |= tmp << n;
 			        }  
@@ -113,7 +113,7 @@ int parity(std::vector<unsigned char> block) {
 }
 
 std::vector<std::vector<unsigned char>> splitBin(int size) {
-	const std::size_t bufferSize = 128 * size;
+	const std::size_t bufferSize = 32 * size;
 	std::vector<std::vector<unsigned char>> blocks;
 	std::vector<char> buffer(bufferSize);
 
@@ -133,13 +133,53 @@ void binTransfer(B15F& drv, int size) {
 		std::string s = to_hex(blocks[i]);
 		std::vector<unsigned char> encoded(s.begin(), s.end());
 		int block_parity = parity(encoded);
-		std::string data = s + '|' + std::to_string(block_parity) + '|' + end;
+		std::string data = '|' + std::to_string(block_parity) + '|' + end;
 		std::cout << "Block " << end << "| parity: " << block_parity << std::endl;
-		
+
+		send(drv, s);
 		send(drv, data + '\n');
 		if(confirmation(drv)) i+=1;
 	}
 }
+
+void binReceive(B15F& drv) {
+	std::string end = "";
+	std::string data = "";
+	while(end != "END") {
+		try {
+			std::string s = receive(drv);
+			size_t p1 = s.find('|');
+			size_t p2 = s.rfind('|');	
+			if (p1 == std::string::npos || p2 == std::string::npos || p1 == p2) {
+        			throw std::logic_error("ERR");
+			}
+			std::string block = s.substr(0, p1);
+			std::string block_parity = s.substr(p1 + 1, p2 - p1 - 1);
+			end = s.substr(p2 + 1);
+			std::vector<unsigned char> encoded(block.begin(), block.end());
+			int new_parity = parity(encoded);
+			//std::cout << "Block " << new_parity << "| parity: " << block_parity << std::endl;
+
+			std::this_thread::sleep_for(1ms);
+			if(block_parity == std::to_string(new_parity)) {
+				if (!from_hex(block)) {
+        				throw std::logic_error("ERR");
+				}		
+				send(drv, "NE\n");
+				data += block;
+			}
+			else send(drv, "ER\n");
+
+		} catch(...) {
+			send(drv, "ER\n");
+		}
+	}
+	auto out = from_hex(data).value();
+	std::cout.write(reinterpret_cast<const char*>(out.data()), out.size());
+    std::cout.flush();
+
+}
+
 
 void menu(B15F& drv, char* argv[]) {
 	        std::string choose = argv[1];
@@ -177,7 +217,7 @@ void menu(B15F& drv, char* argv[]) {
 			}		
 		}
 		else if(choose == "4") {
-			//binReceive();
+			binReceive(drv);
 
 		}
 		else{

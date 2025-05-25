@@ -11,7 +11,11 @@ def menu(function, arduino, block_size = None):
         elif function == '2':
             receive(arduino)
         elif function == '3':
-            binTransfer(int(block_size), arduino)
+
+            if block_size is None:
+                binTransfer(1, arduino)
+            else:
+               binTransfer(int(block_size), arduino)
         elif function == '4':
             binReceive(arduino)
         else:
@@ -41,7 +45,7 @@ def parity(block):
     return result
 
 def splitBin(size):
-    block_size = 128 if (size is None) else int(size) * 128
+    block_size = 32 if (size is None) else int(size) * 32
     blocks = []
     data = sys.stdin.buffer.read(block_size)
 
@@ -62,6 +66,7 @@ def binTransfer(size, arduino):
         data = s + '|' + block_parity + '|' + end
         print("Block " + end + "| parity: " + block_parity + "\n")
         
+        arduino.write((s).encode('utf-8'))
         arduino.write((data + '\n').encode('utf-8'))
         if(confirmation(arduino)): i += 1
         
@@ -73,20 +78,16 @@ def binReceive(arduino):
             s = arduino.readline().decode('utf-8').strip()
             block,block_parity,end = s.split('|')
             newParity = str(parity(block.encode('utf-8')))
-            print(block_parity + " | " + newParity + " | " + end)    
-            time.sleep(1)
+
+            time.sleep(0.1) #second
             if(block_parity == newParity):
-                arduino.write(("NE\n").encode('utf-8'))
                 binascii.unhexlify(block)
+                arduino.write(("NE\n").encode('utf-8'))
                 data += block
             else: 
                 arduino.write(("ER\n").encode('utf-8'))
             
-        except UnicodeDecodeError as e:
-            arduino.write(("ER\n").encode('utf-8'))
-        except binascii.Error as e:
-            arduino.write(("ER\n").encode('utf-8'))
-        except ValueError as e:
+        except Exception as e:
             arduino.write(("ER\n").encode('utf-8'))
             
     sys.stdout.buffer.write(binascii.unhexlify(data))
@@ -101,4 +102,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     arduino = serial.Serial('/dev/tty'+args.port, 9600)
     menu(args.function, arduino, args.size)
-   

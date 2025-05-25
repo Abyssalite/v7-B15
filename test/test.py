@@ -41,8 +41,7 @@ def binTransfer(size):
         
         s = binascii.hexlify(blocks[i]).decode('utf-8')
         block_parity = str(parity(s.encode('utf-8')))
-        data = '|' + block_parity + '|' + end
-        print(s)
+        data = s + '|' + block_parity + '|' + end
         print(data)
         #arduino.write((data + '\n').encode('utf-8'))
         if(confirmation()): i += 1
@@ -90,8 +89,8 @@ def parity(block):
 
 def splitBin(size):
     if size is None:
-        block_size = 32  # Convert KB to bytes
-    else: block_size = int(size) * 32
+        block_size = 64  # Convert KB to bytes
+    else: block_size = int(size) * 64
         
     blocks = []
 

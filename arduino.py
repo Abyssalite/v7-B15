@@ -7,7 +7,8 @@ import time
 def menu(function, arduino, block_size = None):
     try:
         if function == '1':
-            send(arduino)
+            s = sys.stdin.readline() + '\n'
+            send(arduino, s)
         elif function == '2':
             receive(arduino)
         elif function == '3':
@@ -23,9 +24,11 @@ def menu(function, arduino, block_size = None):
     except ValueError:
             print("Size must be number\n")
 
-def send(arduino): 
-    s = sys.stdin.readline()
-    arduino.write((s + '\n').encode('utf-8'))
+def send(arduino, data): 
+    chunks = [data[i:i+16] for i in range(0, len(data), 16)]
+    for chunk in chunks:
+        arduino.write(chunk.encode('utf-8'))
+        time.sleep(3)
         
 def receive(arduino): 
     s = arduino.readline().decode('utf-8')
@@ -45,7 +48,7 @@ def parity(block):
     return result
 
 def splitBin(size):
-    block_size = 32 if (size is None) else int(size) * 32
+    block_size = 64 if (size is None) else int(size) * 64
     blocks = []
     data = sys.stdin.buffer.read(block_size)
 
@@ -66,8 +69,7 @@ def binTransfer(size, arduino):
         data = s + '|' + block_parity + '|' + end
         print("Block " + end + "| parity: " + block_parity + "\n")
         
-        arduino.write((s).encode('utf-8'))
-        arduino.write((data + '\n').encode('utf-8'))
+        send(arduino, (data + '\n'))
         if(confirmation(arduino)): i += 1
         
 def binReceive(arduino):   

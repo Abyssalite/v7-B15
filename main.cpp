@@ -52,11 +52,14 @@ void send(B15F& drv, std::string text) {
 	for (char bin: text) {
 		for (int i = 0; i < 3; i++) {    
 		  	int part = (bin >> i*3) & 0b00000111;  
+
 			drv.setRegister(&PORTA, part |= 0b01000000);
-			
-			std::this_thread::sleep_for(1us); //~60 real us
+			std::this_thread::sleep_for(1us); 
+			//std::this_thread::sleep_for(35ms);
+
 			drv.setRegister(&PORTA, part &= 0b00111111);
-			std::this_thread::sleep_for(2us); //~60 real us
+			std::this_thread::sleep_for(1us);
+			//std::this_thread::sleep_for(35ms);
 		}	
 	}
 }

@@ -26,10 +26,12 @@ void receiveBin(){
   while(n < 7) {
       while(digitalRead(readPin)) {          
           lState = 1;
-          delay(1);
+          delay(7); 
+          // delay(15);
           bin |= (digitalRead(recePin[0]) << n + 0);
           bin |= (digitalRead(recePin[1]) << n + 1);
           bin |= (digitalRead(recePin[2]) << n + 2);
+          //delay(15);
       }  
       cState = digitalRead(readPin);
 
@@ -48,11 +50,13 @@ void sendBin(byte bin) {
     digitalWrite(sendPin[0], (part >> 0) & 1);
     digitalWrite(sendPin[1], (part >> 1) & 1);
     digitalWrite(sendPin[2], (part >> 2) & 1);
-    digitalWrite(writePin, HIGH);
     
-    delay(50);
+    digitalWrite(writePin, HIGH);
+    delay(15); 
+    //delay(50);
     digitalWrite(writePin, LOW);
-    delay(100);
+    delay(15); 
+    //delay(50);
   }
 }
 
@@ -65,7 +69,7 @@ void loop() {
     
   if (Serial.available() > 0) {
     data = Serial.read();
-    delay(20);
+    delay(1);
     sendBin(data);
   }
 }

@@ -33,7 +33,6 @@ std::optional<std::vector<unsigned char>> from_hex(const std::string& hex) {
     } catch (...) {
         return std::nullopt;
     }
-
     return bytes;
 }
 
@@ -50,21 +49,16 @@ std::string strip(const std::string& s) {
 }
 
 void send(B15F& drv, std::string text) {
-	drv.setRegister(&DDRA, 0b11000111);
-
 	for (char bin: text) {
-
 		for (int i = 0; i < 3; i++) {    
 		  	int part = (bin >> i*3) & 0b00000111;  
-			drv.setRegister(&PORTA, part |= 0b11000000);
+			drv.setRegister(&PORTA, part |= 0b01000000);
 			
 			std::this_thread::sleep_for(1us); //~60 real us
-			drv.setRegister(&PORTA, part &= 0b10111111);
+			drv.setRegister(&PORTA, part &= 0b00111111);
 			std::this_thread::sleep_for(2us); //~60 real us
-    			if (i >= 2) drv.setRegister(&PORTA, part &= 0b00111111);
 		}	
 	}
-	drv.setRegister(&DDRA, 0b00000111);
 }
 
 std::string receive(B15F& drv) {
@@ -77,21 +71,19 @@ std::string receive(B15F& drv) {
 	        bool lState = 0;
 	        bool cState = 0;
 
-	        while((drv.getRegister(&PINA) >> 7) & 0b00000001) {
-		        if(n < 7) {
-			        while((drv.getRegister(&PINA) >> 6) & 0b00000001) {          
-		          		lState = (drv.getRegister(&PINA) >> 6) & 0b00000001;
-				        std::this_thread::sleep_for(1us); 
-		          		tmp = (drv.getRegister(&PINA) & 0b00111000) >> 3;
-		          		bin |= tmp << n;
-			        }  
-			        cState = (drv.getRegister(&PINA) >> 6) & 0b00000001;
+	        while(n < 7) {
+			    while((drv.getRegister(&PINA) >> 6) & 0b00000001) {          
+		          	lState = 1;
+				    std::this_thread::sleep_for(1us); 
+		          	tmp = (drv.getRegister(&PINA) & 0b00111000) >> 3;
+		        	bin |= tmp << n;
+			    }  
+			    cState = (drv.getRegister(&PINA) >> 6) & 0b00000001;
 			        
-			        if (lState && !cState ){
-		          		lState = 0;
-		          		n += 3;
-			        } 
-	         	}       
+			    if (lState && !cState ){
+		      		lState = 0;
+		      		n += 3;
+		        } 
 	        }
 	        text += (char)bin;
 	} while ((char)bin != '\n');
@@ -176,12 +168,11 @@ void binReceive(B15F& drv) {
 	auto out = from_hex(data).value();
 	std::cout.write(reinterpret_cast<const char*>(out.data()), out.size());
     std::cout.flush();
-
 }
 
 
 void menu(B15F& drv, char* argv[]) {
-	        std::string choose = argv[1];
+	    std::string choose = argv[1];
 
 		if(choose == "1") {
 			std::cin.clear();
@@ -217,7 +208,6 @@ void menu(B15F& drv, char* argv[]) {
 		}
 		else if(choose == "4") {
 			binReceive(drv);
-
 		}
 		else{
 			std::cout << "Function "<< choose << " not available.\n";
@@ -226,7 +216,8 @@ void menu(B15F& drv, char* argv[]) {
 
 int main(int argc, char* argv[]) {
 	B15F& drv = B15F::getInstance();
-	drv.setRegister(&DDRA, 0b00000111);
+	//readPin,writePin,recePin[3],sendPin[3]
+	drv.setRegister(&DDRA, 0b01000111);
 	if(argc > 1) {
 		menu(drv, argv);
 		return 0;	

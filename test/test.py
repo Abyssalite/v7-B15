@@ -1,7 +1,6 @@
 import binascii
 import argparse
 import sys
-
    
 def confirmation():
     while True:

@@ -42,7 +42,6 @@ bool confirmation(){
             return true;
         else return false;
 	}
-
 }
 
 int parity(std::vector<unsigned char> block) { 
@@ -78,7 +77,6 @@ void binTransfer(int size) {
 		std::cout << data + '\n';
 		if(confirmation()) i += 1;
 	}
-
 }
 
 void binReceive() {
@@ -117,11 +115,10 @@ void binReceive() {
 	auto out = from_hex(data).value();
 	std::cout.write(reinterpret_cast<const char*>(out.data()), out.size());
     std::cout.flush();
-
 }
 
 void menu(char* argv[]) {
-	        std::string choose = argv[1];
+	    std::string choose = argv[1];
 
 		if(choose == "1") {
             std::cout << "send(drv)\n";

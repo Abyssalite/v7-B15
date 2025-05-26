@@ -29,7 +29,7 @@ def send(arduino, data):
     for chunk in chunks:
         arduino.write(chunk.encode('utf-8'))
         time.sleep(3)
-        
+      
 def receive(arduino): 
     s = arduino.readline().decode('utf-8')
     sys.stdout.write(s)

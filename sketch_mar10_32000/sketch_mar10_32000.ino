@@ -52,11 +52,11 @@ void sendBin(byte bin) {
     digitalWrite(sendPin[2], (part >> 2) & 1);
     
     digitalWrite(writePin, HIGH);
-    delay(15); 
-    //delay(50);
+    //delay(15); 
+    delay(50);
     digitalWrite(writePin, LOW);
-    delay(15); 
-    //delay(50);
+    //delay(15); 
+    delay(50);
   }
 }
 

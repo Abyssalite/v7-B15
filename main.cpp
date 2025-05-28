@@ -53,11 +53,11 @@ void send(B15F& drv, std::string text) {
 		for (int i = 0; i < 3; i++) {    
 		  	int part = (bin >> i*3) & 0b00000111;  
 
-			drv.setRegister(&PORTA, part |= 0b01000000);
+			drv.setRegister(&PORTA, part |= 0b01000000); //15ms
 			std::this_thread::sleep_for(1us); 
 			//std::this_thread::sleep_for(35ms);
 
-			drv.setRegister(&PORTA, part &= 0b00111111);
+			drv.setRegister(&PORTA, part &= 0b00111111); //15ms
 			std::this_thread::sleep_for(1us);
 			//std::this_thread::sleep_for(35ms);
 		}	
@@ -75,13 +75,13 @@ std::string receive(B15F& drv) {
 	        bool cState = 0;
 
 	        while(n < 7) {
-			    while((drv.getRegister(&PINA) >> 6) & 0b00000001) {          
+			    while((drv.getRegister(&PINA) >> 7) & 0b00000001) { //15ms    
 		          	lState = 1;
 				    std::this_thread::sleep_for(1us); 
-		          	tmp = (drv.getRegister(&PINA) & 0b00111000) >> 3;
+		          	tmp = (drv.getRegister(&PINA) & 0b00111000) >> 3; //15ms
 		        	bin |= tmp << n;
 			    }  
-			    cState = (drv.getRegister(&PINA) >> 6) & 0b00000001;
+			    cState = (drv.getRegister(&PINA) >> 7) & 0b00000001; //15ms
 			        
 			    if (lState && !cState ){
 		      		lState = 0;
@@ -152,9 +152,9 @@ void binReceive(B15F& drv) {
 			end = s.substr(p2 + 1);
 			std::vector<unsigned char> encoded(block.begin(), block.end());
 			int new_parity = parity(encoded);
-			//std::cout << "Block " << new_parity << "| parity: " << block_parity << std::endl;
+			//std::cout << "new parity " << new_parity << "| parity: " << block_parity << std::endl;
 
-			std::this_thread::sleep_for(1ms);
+			std::this_thread::sleep_for(1us);
 			if(block_parity == std::to_string(new_parity)) {
 				if (!from_hex(block)) {
         				throw std::logic_error("ERR");

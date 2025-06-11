@@ -54,11 +54,11 @@ void send(B15F& drv, std::string text) {
 		  	int part = (bin >> i*3) & 0b00000111;  
 
 			drv.setRegister(&PORTA, part |= 0b01000000); //15ms
-			std::this_thread::sleep_for(1us); 
+			std::this_thread::sleep_for(10ms); 
 			//std::this_thread::sleep_for(35ms);
 
 			drv.setRegister(&PORTA, part &= 0b00111111); //15ms
-			std::this_thread::sleep_for(1us);
+			std::this_thread::sleep_for(10ms);
 			//std::this_thread::sleep_for(35ms);
 		}	
 	}
@@ -162,6 +162,7 @@ void binReceive(B15F& drv) {
 				send(drv, "NE\n");
 				data += block;
 			}
+			end = "";
 			else send(drv, "ER\n");
 
 		} catch(...) {

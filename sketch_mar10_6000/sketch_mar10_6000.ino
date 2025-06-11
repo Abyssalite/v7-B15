@@ -26,7 +26,7 @@ void receiveBin(){
   while(n < 7) {
       while(digitalRead(readPin)) {          
           lState = 1;
-          delay(7); 
+          delay(10); 
           // delay(15);
           bin |= (digitalRead(recePin[0]) << n + 0);
           bin |= (digitalRead(recePin[1]) << n + 1);

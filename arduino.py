@@ -87,6 +87,7 @@ def binReceive(arduino):
                 arduino.write(("NE\n").encode('utf-8'))
                 data += block
             else: 
+                end = ""
                 arduino.write(("ER\n").encode('utf-8'))
             
         except Exception as e:
